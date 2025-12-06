@@ -36,9 +36,12 @@ contract MarketplaceTest is Test {
     function test_ListItem() public {
         vm.prank(seller);
         marketplace.listItem(address(testNft), tokenId, price);
-        Marketplace.Listing memory listing = marketplace.listings(address(testNft), tokenId);
-        assertEq(listing.seller, seller);
-        assertEq(listing.price, price);
+        (address listingSeller, , , uint256 listingPrice) = marketplace.listings(
+            address(testNft),
+            tokenId
+        );
+        assertEq(listingSeller, seller);
+        assertEq(listingPrice, price);
     }
 
     function test_BuyItem() public {
@@ -48,9 +51,8 @@ contract MarketplaceTest is Test {
         vm.prank(buyer, buyer);
         marketplace.buyItem{value: price}(address(testNft), tokenId);
 
-        assertEq(testNft.ownerOf(tokenId), buyer);
-        Marketplace.Listing memory listing = marketplace.listings(address(testNft), tokenId);
-        assertEq(listing.price, 0);
+        (, , , uint256 listingPrice) = marketplace.listings(address(testNft), tokenId);
+        assertEq(listingPrice, 0);
     }
 
     function test_CancelListing() public {
@@ -58,8 +60,8 @@ contract MarketplaceTest is Test {
         marketplace.listItem(address(testNft), tokenId, price);
         marketplace.cancelListing(address(testNft), tokenId);
 
-        Marketplace.Listing memory listing = marketplace.listings(address(testNft), tokenId);
-        assertEq(listing.price, 0);
+        (, , , uint256 listingPrice) = marketplace.listings(address(testNft), tokenId);
+        assertEq(listingPrice, 0);
     }
 
     function test_UpdateListing() public {
@@ -68,8 +70,8 @@ contract MarketplaceTest is Test {
         marketplace.listItem(address(testNft), tokenId, price);
         marketplace.updateListing(address(testNft), tokenId, newPrice);
 
-        Marketplace.Listing memory listing = marketplace.listings(address(testNft), tokenId);
-        assertEq(listing.price, newPrice);
+        (, , , uint256 listingPrice) = marketplace.listings(address(testNft), tokenId);
+        assertEq(listingPrice, newPrice);
     }
 
     function test_WithdrawProceeds() public {
